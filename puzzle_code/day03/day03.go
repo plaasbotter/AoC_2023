@@ -7,6 +7,11 @@ import (
 	"unicode"
 )
 
+type coord struct {
+	x int
+	y int
+}
+
 // Entry point for the day
 func Run(filename string, part int) {
 	input, err := utils.LoadFile(filename)
@@ -24,9 +29,11 @@ func Run(filename string, part int) {
 	}
 }
 
+// Too many ifs, but universal solution
 func part_a(input *[]string) {
 	var sum int = 0
 	lines := *input
+
 	for yIndex, line := range lines {
 		numberStart := 0
 		countStarted := false
@@ -39,50 +46,32 @@ func part_a(input *[]string) {
 			} else if countStarted && (!unicode.IsDigit(char) || xIndex >= len(line)-1) {
 				countStarted = false
 				value, _ := strconv.Atoi(line[numberStart:xIndex])
+				if xIndex == len(line)-1 && unicode.IsDigit(char) {
+					value, _ = strconv.Atoi(line[numberStart : xIndex+1])
+				}
+
 				foundSymbol := false
-
-				startY := yIndex - 1
-				if startY < 0 {
-					startY = 0
-				}
-				endY := yIndex + 1
-				if endY >= len(lines)-1 {
-					endY = len(lines) - 1
-				}
+				coords := make([]coord, 0)
 				startX := numberStart - 1
-				if startX < 0 {
-					startX = 0
+				for x := startX; x < xIndex+1; x++ {
+					coords = append(coords, coord{x: x, y: yIndex - 1})
+					coords = append(coords, coord{x: x, y: yIndex + 1})
 				}
-				endX := xIndex + 1
-				if endX >= len(line)-1 {
-					endX = len(line) - 1
+				coords = append(coords, coord{x: startX, y: yIndex})
+				if xIndex != len(line)-1 {
+					coords = append(coords, coord{x: xIndex, y: yIndex})
 				}
-				//out:
-				for y := startY; y < endY+1; y++ {
-					for x := startX; x < endX; x++ {
-						fmt.Print(string(lines[y][x]))
-						if !unicode.IsDigit(rune(lines[y][x])) && lines[y][x] != '.' {
-
-							/*
-								if value == 547 {
-									fmt.Println(string(lines[y][x]), value)
-									for yPrint := startY; yPrint < endY+1; yPrint++ {
-										fmt.Println(lines[yPrint][startX : endX+1])
-									}
-									fmt.Println()
-								}
-							*/
+				for _, pos := range coords {
+					if pos.x >= 0 && pos.x < len(line) && pos.y >= 0 && pos.y < len(lines) {
+						if lines[pos.y][pos.x] != '.' {
 							foundSymbol = true
-							//break out
+							break
 						}
-
 					}
-					fmt.Println()
 				}
-				fmt.Println()
 				if foundSymbol {
+					fmt.Println((value))
 					sum += value
-
 				}
 			}
 		}
@@ -90,7 +79,62 @@ func part_a(input *[]string) {
 	fmt.Println(sum)
 }
 
-// 528616 < x < 531806
-
+// There doesn't appear to be a star at the edge
 func part_b(input *[]string) {
+	var sum int = 0
+	lines := *input
+	countStarted := false
+	var count int = 0
+	var value int = 1
+	for yIndex, line := range lines {
+		for xIndex, char := range line {
+			if char == '*' {
+				count = 0
+				value = 1
+				for y := yIndex - 1; y < yIndex+2; y++ {
+					countStarted = false
+					for x := xIndex - 1; x < xIndex+2; x++ {
+						if y == yIndex && x == xIndex {
+							countStarted = false
+							continue
+						}
+						if !countStarted && unicode.IsDigit(rune(lines[y][x])) {
+							countStarted = true
+							value *= findNumber(lines[y], x)
+							count++
+						} else if countStarted && lines[y][x] == '.' {
+							countStarted = false
+						}
+					}
+				}
+				if count > 1 {
+					fmt.Println(value)
+					sum += value
+				}
+			}
+		}
+	}
+	fmt.Println(sum)
+}
+
+func findNumber(input string, pos int) int {
+	start := pos
+	end := pos
+	for i := pos; i >= 0; i-- {
+		if !unicode.IsDigit(rune(input[i])) {
+			break
+		}
+		start = i
+	}
+	for i := pos; i < len(input); i++ {
+		if !unicode.IsDigit(rune(input[i])) {
+			break
+		}
+		end = i
+	}
+	value, _ := strconv.Atoi(input[start : end+1])
+	if value == 0 {
+		println("mario")
+	}
+	return value
 }
