@@ -1,7 +1,7 @@
 package main
 
-import "advent_2023/puzzle_code/day01"
+import "advent_2023/puzzle_code/day02"
 
 func main() {
-	day01.Run("day01/day01_b.txt", 2)
+	day02.Run("day02/day02_b.txt", 2)
 }
