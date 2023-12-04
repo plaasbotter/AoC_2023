@@ -133,8 +133,5 @@ func findNumber(input string, pos int) int {
 		end = i
 	}
 	value, _ := strconv.Atoi(input[start : end+1])
-	if value == 0 {
-		println("mario")
-	}
 	return value
 }
